@@ -10,6 +10,8 @@ import {
   Put,
 } from '@nestjs/common';
 import { CoursesService } from './courses.service';
+import { CreateCourseDTO } from './dto/create-course.dto';
+import { UpdateCourseDTO } from './dto/update-course.dto';
 
 @Controller('courses')
 export class CoursesController {
@@ -27,14 +29,14 @@ export class CoursesController {
 
   // @HttpCode(204) //Maneira de definir o retorno HTTP.
   @Post()
-  create(@Body() body) {
-    return this.coursesService.create(body);
+  create(@Body() createCourseDTO: CreateCourseDTO) {
+    return this.coursesService.create(createCourseDTO);
   }
 
   // Atualização total do registro.
   @Put(':id')
-  update(@Param('id') id: number, @Body() body) {
-    return this.coursesService.update(id, body);
+  update(@Param('id') id: number, updateCourseDTO: UpdateCourseDTO) {
+    return this.coursesService.update(id, updateCourseDTO);
   }
 
   @HttpCode(HttpStatus.NO_CONTENT)

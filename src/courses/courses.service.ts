@@ -54,7 +54,9 @@ export class CoursesService {
 
   create(any): Course {
     const newCourse: Course = any;
+
     this.courses.push(newCourse);
+
     return newCourse;
   }
 
@@ -69,6 +71,8 @@ export class CoursesService {
       id,
       ...updateCourseDTO,
     };
+
+    return updateCourseDTO;
   }
 
   destroy(id: Number) {
