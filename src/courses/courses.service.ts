@@ -1,87 +1,100 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
 import { Course } from 'src/courses/entities/courses.entity';
+import { Repository } from 'typeorm';
+import { Tag } from './entities/tags.entity';
+import { CreateCourseDTO } from './dto/create-course.dto';
+import { UpdateCourseDTO } from './dto/update-course.dto';
 
 @Injectable()
 export class CoursesService {
-  courses: Course[] = [
-    {
-      id: 1,
-      name: 'Introdução ao TypeScript',
-      description:
-        'Aprenda os fundamentos do TypeScript, uma linguagem que expande o JavaScript.',
-      tags: ['TypeScript', 'Programação', 'JavaScript'],
-    },
-    {
-      id: 2,
-      name: 'Desenvolvimento Web com React',
-      description:
-        'Curso completo para criar aplicações web interativas com React.',
-      tags: ['React', 'Desenvolvimento Web', 'Frontend', 'JavaScript'],
-    },
-    {
-      id: 3,
-      name: 'Ciência de Dados com Python',
-      description:
-        'Domine análise de dados e aprendizado de máquina com Python.',
-      tags: [
-        'Python',
-        'Ciência de Dados',
-        'Machine Learning',
-        'Análise de Dados',
-      ],
-    },
-    {
-      id: 4,
-      name: 'Fundamentos de Cibersegurança',
-      description:
-        'Conheça os princípios básicos de segurança da informação e redes.',
-      tags: ['Cibersegurança', 'Segurança', 'Redes', 'Gestão de Riscos'],
-    },
-  ];
+  constructor(
+    @InjectRepository(Course)
+    private readonly courseRepository: Repository<Course>,
+    @InjectRepository(Tag)
+    private readonly tagRepository: Repository<Tag>,
+  ) {}
 
-  findAll() {
-    return this.courses;
+  async findAll() {
+    return await this.courseRepository.find({
+      relations: ['tags'],
+    });
   }
 
-  findOne(id: number) {
-    const course = this.courses.find((el) => Number(el.id) == id);
+  async findOne(id: number) {
+    const course = await this.courseRepository.findOne({
+      where: { id },
+      relations: ['tags'],
+    });
+
     if (!course) {
-      throw new HttpException(`Curso com o ID ${id} não foi encontrado`, HttpStatus.NOT_FOUND);
+      throw new HttpException(
+        `Curso com o ID ${id} não foi encontrado`,
+        HttpStatus.NOT_FOUND,
+      );
     }
 
     return course;
   }
 
-  create(any): Course {
-    const newCourse: Course = any;
+  async create(createCourseDTO: CreateCourseDTO) {
+    const tags = await Promise.all(
+      createCourseDTO.tags.map((name) => this.preloadTagByName(name)),
+    );
 
-    this.courses.push(newCourse);
+    const course = this.courseRepository.create({
+      ...createCourseDTO,
+      tags,
+    });
 
-    return newCourse;
+    return this.courseRepository.save(course);
   }
 
-  update(id: number, updateCourseDTO: any) {
-    const findCourse = this.courses.find((el) => el.id == id);
-
-    if (!findCourse) return 'Curso não encontrado';
-
-    const index = this.courses.findIndex((course) => course.id == id);
-
-    this.courses[index] = {
-      id,
+  async update(id: number, updateCourseDTO: UpdateCourseDTO) {
+    const tags =
+      updateCourseDTO.tags &&
+      (await Promise.all(
+        updateCourseDTO.tags.map((name) => this.preloadTagByName(name)),
+      ));
+    const course = await this.courseRepository.preload({
       ...updateCourseDTO,
-    };
+      id,
+      tags,
+    });
 
-    return updateCourseDTO;
+    // Verifica se a entidade foi encontrada
+    if (!course) {
+      throw new HttpException(
+        `Curso com o ID ${id} não foi encontrado`,
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    // Salva a entidade atualizada
+    return this.courseRepository.save(course);
   }
 
-  destroy(id: Number) {
-    const index = this.courses.findIndex((course) => course.id == id);
-    
-    if (index === -1) return 'Curso não encontrado';
+  async remove(id: number) {
+    const course = await this.courseRepository.findOne({
+      where: { id },
+    });
+    if (!course) {
+      throw new NotFoundException(`Course ID ${id} not found`);
+    }
+    return this.courseRepository.remove(course);
+  }
 
-    this.courses.splice(index, 1);
-
-    return this.findAll();
+  private async preloadTagByName(name: string): Promise<Tag> {
+    const tag = await this.tagRepository.findOne({ where: { name } });
+    if (tag) {
+      return tag;
+    }
+    return this.tagRepository.create({ name });
   }
 }

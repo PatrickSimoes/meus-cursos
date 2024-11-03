@@ -7,6 +7,6 @@ export class CreateCourseDTO {
   @IsString()
   readonly description: string;
 
-  @IsString({each: true})
-  readonly tags: String;
+  @IsString({ each: true })
+  readonly tags: string[];
 }

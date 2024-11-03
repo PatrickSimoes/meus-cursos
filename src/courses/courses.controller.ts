@@ -15,34 +15,35 @@ import { UpdateCourseDTO } from './dto/update-course.dto';
 
 @Controller('courses')
 export class CoursesController {
-  constructor(readonly coursesService: CoursesService) {}
+  constructor(readonly courseService: CoursesService) {}
   @Get()
   findAll() {
-    return this.coursesService.findAll();
+    return this.courseService.findAll();
   }
 
   // Rota com um Parâmetro
   @Get(':id')
   findOne(@Param('id') id: number) {
-    return this.coursesService.findOne(id);
+    return this.courseService.findOne(id);
   }
 
   // @HttpCode(204) //Maneira de definir o retorno HTTP.
   @Post()
   create(@Body() createCourseDTO: CreateCourseDTO) {
-    return this.coursesService.create(createCourseDTO);
+    return this.courseService.create(createCourseDTO);
   }
 
   // Atualização total do registro.
   @Put(':id')
-  update(@Param('id') id: number, updateCourseDTO: UpdateCourseDTO) {
-    return this.coursesService.update(id, updateCourseDTO);
+  update(@Param('id') id: number, @Body() updateCourseDTO: UpdateCourseDTO) {
+    return this.courseService.update(id, updateCourseDTO);
   }
 
-  @HttpCode(HttpStatus.NO_CONTENT)
   @Delete(':id')
-  destroy(@Param(':id') id: number) {
-    return this.coursesService.destroy(id);
+  remove(@Param('id') id: number) {
+    this.courseService.remove(id);
+
+    return `ID ${id} removido com sucesso!`;
   }
 
   //Rota com sub rota
