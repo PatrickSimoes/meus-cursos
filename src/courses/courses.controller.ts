@@ -23,7 +23,7 @@ export class CoursesController {
 
   // Rota com um Parâmetro
   @Get(':id')
-  findOne(@Param('id') id: number) {
+  findOne(@Param('id') id: string) {
     return this.courseService.findOne(id);
   }
 
@@ -35,12 +35,12 @@ export class CoursesController {
 
   // Atualização total do registro.
   @Put(':id')
-  update(@Param('id') id: number, @Body() updateCourseDTO: UpdateCourseDTO) {
+  update(@Param('id') id: string, @Body() updateCourseDTO: UpdateCourseDTO) {
     return this.courseService.update(id, updateCourseDTO);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: number) {
+  remove(@Param('id') id: string) {
     this.courseService.remove(id);
 
     return `ID ${id} removido com sucesso!`;
