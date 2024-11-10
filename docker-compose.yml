@@ -8,11 +8,22 @@ services:
     volumes:
       - dbdata:/var/lib/postgresql/data
     environment:
-      POSTGRES_DB: devtraining
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: docker
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASS}
     ports:
-      - "5432:5432"
+      - "${DB_PORT}:5432"
+
+  dbteste:
+    container_name: db_teste
+    image: postgres
+    restart: on-failure
+    environment:
+      POSTGRES_DB: db_teste
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASS}
+    ports:
+      - "5431:5432"
       
 volumes:
   dbdata:

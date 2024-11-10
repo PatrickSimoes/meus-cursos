@@ -39,11 +39,10 @@ export class CoursesController {
     return this.courseService.update(id, updateCourseDTO);
   }
 
+  @HttpCode(HttpStatus.NO_CONTENT)
   @Delete(':id')
   remove(@Param('id') id: string) {
-    this.courseService.remove(id);
-
-    return `ID ${id} removido com sucesso!`;
+    return this.courseService.remove(id)
   }
 
   //Rota com sub rota
